@@ -1,0 +1,71 @@
+units          real
+dimension      3
+boundary       p p f
+atom_style     full
+read_data      23-1equ.data
+region         lower block -3 60 -2 60 -2 10 units box
+group          lower region lower
+group          mobile subtract all lower
+
+
+pair_style	reax/c lmp_control
+pair_coeff	* * ffield.reax.choCaAlSi Ca Si O O O H Al O H
+
+neighbor       3 bin
+neigh_modify   delay 0 every 1 check yes
+fix            myreax all qeq/reax 1 0.0 10.0 1e-6 param.qeq
+timestep       0.1
+velocity       mobile scale 300.0
+
+#fix    1 all nvt temp 300 300 10
+#thermo_style   custom step temp pe press ke etotal 
+#thermo         1000
+#run 40000
+#unfix 1
+
+compute 1 all stress/atom NULL
+compute mype all pe/atom
+compute myke all ke/atom
+variable etotal atom c_mype+c_myke
+compute myTemp mobile temp
+compute v all voronoi/atom
+variable stressx atom c_1[1]/c_v[1]/10000
+variable stressy atom c_1[2]/c_v[1]/10000
+variable stressz atom c_1[3]/c_v[1]/10000
+compute reax all pair reax/c
+variable eb      equal c_reax[1]
+variable ea      equal c_reax[2]
+variable elp      equal c_reax[3]
+variable ev      equal c_reax[5]
+variable epen      equal c_reax[6]
+variable ecoa      equal c_reax[7]
+variable ehb      equal c_reax[8]
+variable et      equal c_reax[9]
+variable eco      equal c_reax[10]
+variable ew      equal c_reax[11]
+variable ep      equal c_reax[12]
+variable eqeq    equal c_reax[14]
+fix 1 all print 1000 "${ea} ${eb} ${elp} ${ev} ${epen} ${ecoa} ${ehb} ${et} ${eco} ${ew} ${ep} ${eqeq}" file out.dat screen no
+variable   z equal vdisplace(67,-0.0005)
+variable   dC equal 0.0005*0.1*(step-0)
+velocity lower set 0.0 0.0 0.0
+fix       2 lower setforce 0.0 0.0 0.0
+fix       3 mobile nve
+fix	  4 mobile temp/berendsen 300 300 10
+#fix    4 mobile nvt temp 300 300 10
+fix    5 all indent 20 sphere 29.8 19.3 v_z 15 units box
+thermo_style   custom step temp pe press ke etotal v_dC f_5 f_5[1] f_5[2] f_5[3] 
+thermo         1000
+thermo_modify temp myTemp lost ignore
+dump   2 all custom 1000 dump.*.ind.lammpstrj id type x y z v_etotal c_mype c_myke v_stressx v_stressy v_stressz
+run    300000
+unfix     5
+variable   z1 equal vdisplace(52,0.0005)
+variable   dC1 equal 15-0.0005*0.1*(step-300000)
+fix    6 all indent 20 sphere 29.8 19.3 v_z1 15 units box
+thermo_style   custom step temp pe press ke etotal v_dC1 f_6 f_6[1] f_6[2] f_6[3] 
+thermo         1000
+thermo_modify temp myTemp lost ignore
+run    300000
+
+

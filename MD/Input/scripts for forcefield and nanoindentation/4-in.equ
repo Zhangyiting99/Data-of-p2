@@ -1,0 +1,37 @@
+units          real
+dimension      3
+boundary       p p p
+atom_style     full
+read_data      23-1.data
+change_box all z scale 1.2
+pair_style	reax/c lmp_control
+pair_coeff	* * ffield.reax.choCaAlSi Ca Si O O O H Al O H
+
+neighbor       3 bin
+neigh_modify   delay 0 every 1 check yes
+fix            myreax all qeq/reax 1 0.0 10.0 1e-6 param.qeq
+min_style      cg
+minimize       1.0e-5 1.0e-5 5000 5000
+timestep       0.1
+
+thermo_style   custom step temp pe press ke etotal 
+thermo         1000
+
+velocity       all create 300.0 49285 dist gaussian units box
+#velocity       all scale 300.0
+dump           1 all atom 1000 dump.*.relax.lammpstrj
+fix            1 all nvt temp 300 300 10
+run            50000
+unfix          1
+write_data     23-1NVT.data
+fix            2 all npt temp 300 300 10 iso 1 1 100
+run            800000
+unfix          2
+#change_box all boundary p p s
+#fix            3 all nve
+#fix	              4 all temp/berendsen 300 300 10
+#run                                 300000
+undump         1
+write_data     23-1equ.data
+
+

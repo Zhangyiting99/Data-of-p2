@@ -1,7 +1,7 @@
 
-# C-A-S-H Material Simulation and Machine Learning Analysis
+# Data of p2
 
-This repository contains the data, scripts, and models used in the study of C-A-S-H (Calcium-Aluminum-Silicate Hydrate) materials. It includes molecular simulations (MD) for nanoindentation testing, machine learning models for prediction, and statistical analysis of bond lengths and bond angles in silicon-oxygen and aluminum-oxygen tetrahedra.
+Data of Quantifying the Role of Qn Structural Units in C-A-S-H Gels: Insights from Molecular Dynamics Simulations and Interpretable Machine Learning
 
 ## File Structure
 
